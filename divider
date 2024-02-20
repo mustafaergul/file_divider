@@ -1,0 +1,61 @@
+#!/usr/bin/env ruby
+
+# Usage
+# Run divider "filename" "number of files to be divided"
+# Command should look like ./divider --file="/Users/mergul/Downloads/person.csv" --count=4
+
+require "csv"
+require "pry"
+
+def process_arguments
+  options = {}
+  
+  ARGV.each_slice(2) do |key, value|
+    options[key.sub(/^--?/, '').to_sym] = value if key.start_with?('-')
+  end
+
+  file_name = options[:file]
+  number_of_files = options[:count]
+
+  if file_name.nil? || number_of_files.nil?
+    puts "Please provide both arguments."
+  elsif options.count > 2
+    puts "Only two arguments are accepted file name and number of files to be divided"
+  else
+    puts "The provided arguments are file: #{file_name.split("/").last} and number_of_files: #{number_of_files}"
+    run_divide(options)
+  end
+end
+
+def read_csv_file(file)
+  begin
+    CSV.read(file, headers: true, col_sep: ",", quote_char: '"', liberal_parsing: false)
+  rescue => e
+    puts "Something wrong with reading the file: #{e.message}"    
+  end
+end
+
+def file_headers(read_csv_file)
+  read_csv_file.headers
+end
+
+def run_divide(options)
+  division = CSV.read(options[:file], headers: true).count / options[:count].to_i
+
+  (options[:count].to_i).times do |index|
+
+    start = index * division
+    finish = start + division - 1
+
+    puts "#{start}-#{finish}.csv is generated.."
+
+    CSV.open("#{start}-#{finish}_rows.csv", 'w+') do |row|
+      row << file_headers(read_csv_file(options[:file]))
+      read_csv_file(options[:file])[start..finish].each do |d|
+        row << d
+      end
+    end
+  end
+end
+
+process_arguments
