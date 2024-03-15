@@ -9,9 +9,9 @@ require "pry"
 
 def process_arguments
   options = {}
-  
+
   ARGV.each_slice(2) do |key, value|
-    options[key.sub(/^--?/, '').to_sym] = value if key.start_with?('-')
+    options[key.sub(/^--?/, "").to_sym] = value if key.start_with?("-")
   end
 
   file_name = options[:file]
@@ -28,11 +28,9 @@ def process_arguments
 end
 
 def read_csv_file(file)
-  begin
-    CSV.read(file, headers: true, col_sep: ",", quote_char: '"', liberal_parsing: false)
-  rescue => e
-    puts "Something wrong with reading the file: #{e.message}"    
-  end
+  CSV.read(file, headers: true, col_sep: ",", quote_char: '"', liberal_parsing: false)
+rescue => e
+  puts "Something wrong with reading the file: #{e.message}"
 end
 
 def file_headers(read_csv_file)
@@ -42,14 +40,13 @@ end
 def run_divide(options)
   division = CSV.read(options[:file], headers: true).count / options[:count].to_i
 
-  (options[:count].to_i).times do |index|
-
+  options[:count].to_i.times do |index|
     start = index * division
     finish = start + division - 1
 
     puts "#{start}-#{finish}.csv is generated.."
 
-    CSV.open("#{start}-#{finish}_rows.csv", 'w+') do |row|
+    CSV.open("#{start}-#{finish}_rows.csv", "w+") do |row|
       row << file_headers(read_csv_file(options[:file]))
       read_csv_file(options[:file])[start..finish].each do |d|
         row << d
