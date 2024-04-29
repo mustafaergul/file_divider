@@ -10,8 +10,13 @@ require "pry"
 def process_arguments
   options = {}
 
-  ARGV.each_slice(2) do |key, value|
-    options[key.sub(/^--?/, "").to_sym] = value if key.start_with?("-")
+  ARGV.each do |arg|
+    if arg.start_with?("--")
+      key_value_pair = arg.split("=")
+      key = key_value_pair[0][2..-1].to_sym
+      value = key_value_pair[1]
+      options[key] = value
+    end
   end
 
   file_name = options[:file]
